@@ -1,0 +1,22 @@
+{
+  "name": "redash-manager",
+  "version": "1.0.0",
+  "repository": "https://github.com/caugner/redash-manager",
+  "license": "MPL-2.0",
+  "description": "Download and manage Redash queries locally",
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "prepare": "test -f .env || cp .env-dist .env",
+    "download": "node --env-file=.env src/index.js download"
+  },
+  "keywords": [
+    "redash",
+    "query",
+    "management"
+  ],
+  "author": "",
+  "license": "ISC"
+}
