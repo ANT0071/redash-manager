@@ -138,7 +138,7 @@ async function promptUser(question) {
   });
 
   return new Promise((resolve) => {
-    rl.question(`${question} (yes/skip/yes-all/skip-all/quit): `, (answer) => {
+    rl.question(`${question}\n(yes/skip/yes-all/skip-all/quit): `, (answer) => {
       rl.close();
       const normalized = answer.toLowerCase().trim();
 
@@ -173,7 +173,7 @@ async function promptConflict(question) {
 
   return new Promise((resolve) => {
     rl.question(
-      `${question} (local/remote/skip/local-all/remote-all): `,
+      `${question}\n(local/remote/skip/local-all/remote-all): `,
       (answer) => {
         rl.close();
         const normalized = answer.toLowerCase().trim();
@@ -311,8 +311,9 @@ export async function downloadQueries() {
           );
         }
 
+        const queryUrl = `${client.baseUrl}/queries/${queryId}/source`;
         const response = await promptUser(
-          `Upload local changes to remote for query ${queryId}?`
+          `Upload local changes to remote? ${queryUrl}`
         );
 
         if (response === 'quit') {
@@ -377,9 +378,8 @@ export async function downloadQueries() {
         console.log(`  [AUTO] Using remote version (batch mode: remote-all)`);
         resolution = 'remote';
       } else if (!userQuit) {
-        const response = await promptConflict(
-          `Resolve conflict for query ${queryId}?`
-        );
+        const queryUrl = `${client.baseUrl}/queries/${queryId}/source`;
+        const response = await promptConflict(`Resolve conflict? ${queryUrl}`);
 
         if (response === 'local-all') {
           conflictBatchMode = 'local-all';
