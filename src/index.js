@@ -7,6 +7,13 @@
 
 import { downloadQueries } from './services/downloader.js';
 
+/**
+ * @typedef {Object} Command
+ * @property {string} description
+ * @property {() => Promise<void>} action
+ */
+
+/** @type {Record<string, Command>} */
 const COMMANDS = {
   download: {
     description: 'Download all queries from Redash',
@@ -16,6 +23,7 @@ const COMMANDS = {
 
 /**
  * Display help information
+ * @returns {void}
  */
 function showHelp() {
   console.log('Redash Manager - Download and manage Redash queries locally\n');
@@ -33,6 +41,7 @@ function showHelp() {
 
 /**
  * Main function
+ * @returns {Promise<void>}
  */
 async function main() {
   const command = process.argv[2];
@@ -53,7 +62,7 @@ async function main() {
   try {
     await cmd.action();
   } catch (error) {
-    console.error('\nError:', error.message);
+    console.error('\nError:', error instanceof Error ? error.message : String(error));
     process.exit(1);
   }
 }

@@ -11,7 +11,15 @@ import {
 } from '../utils/fileManager.js';
 
 /**
+ * @typedef {import('../api/redash.js').RedashQuery} RedashQuery
+ * @typedef {import('../utils/fileManager.js').QueryMetadata} QueryMetadata
+ */
+
+/**
  * Build metadata object for a query
+ * @param {RedashQuery} query
+ * @param {string} hash
+ * @returns {QueryMetadata}
  */
 function buildMetadata(query, hash) {
   return {
@@ -32,6 +40,7 @@ function buildMetadata(query, hash) {
 
 /**
  * Download all queries from Redash
+ * @returns {Promise<void>}
  */
 export async function downloadQueries() {
   console.log('Connecting to Redash API...');

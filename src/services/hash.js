@@ -7,6 +7,8 @@ import crypto from 'crypto';
 
 /**
  * Generate SHA-256 hash of content
+ * @param {string} content
+ * @returns {string}
  */
 export function generateHash(content) {
   return crypto
@@ -17,6 +19,8 @@ export function generateHash(content) {
 
 /**
  * Generate hash for a query's SQL content
+ * @param {{ query?: string }} query
+ * @returns {string}
  */
 export function hashQuery(query) {
   const content = query.query || '';

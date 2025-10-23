@@ -10,7 +10,8 @@
   },
   "scripts": {
     "prepare": "test -f .env || cp .env-dist .env",
-    "download": "node --env-file=.env src/index.js download"
+    "download": "node --env-file=.env src/index.js download",
+    "type-check": "tsc --noEmit"
   },
   "keywords": [
     "redash",
@@ -18,5 +19,8 @@
     "management"
   ],
   "author": "",
-  "license": "ISC"
+  "devDependencies": {
+    "@types/node": "^24.9.1",
+    "typescript": "^5.7.0"
+  }
 }

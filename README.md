@@ -8,7 +8,8 @@ Download and manage Redash queries locally with zero external dependencies.
 - Save queries as `.sql` files with accompanying metadata
 - Track query changes using SHA-256 hashing
 - Skip unchanged queries on subsequent downloads
-- Zero external dependencies (uses Node.js 24 built-in features)
+- Zero runtime dependencies (uses Node.js 24 built-in features)
+- TypeScript type checking with JSDoc annotations
 
 ## Requirements
 
@@ -16,7 +17,7 @@ Download and manage Redash queries locally with zero external dependencies.
 
 ## Setup
 
-1. Install dependencies (none required, but this will set up your `.env` file):
+1. Install dependencies (dev only - TypeScript for type checking):
 
 ```bash
 npm install
@@ -35,6 +36,12 @@ REDASH_API_KEY=your_api_key_here
 
 ```bash
 npm run download
+```
+
+### Type checking
+
+```bash
+npm run type-check
 ```
 
 This will:
@@ -87,15 +94,16 @@ redash-manager/
 ├── .env-dist              # Environment template
 ├── .env                   # Your credentials (gitignored)
 ├── package.json
+├── tsconfig.json          # TypeScript config for type checking
 ├── src/
-│   ├── index.js          # CLI entry point
+│   ├── index.js          # CLI entry point (with JSDoc types)
 │   ├── api/
-│   │   └── redash.js     # Redash API client
+│   │   └── redash.js     # Redash API client (with JSDoc types)
 │   ├── services/
-│   │   ├── downloader.js # Download logic
-│   │   └── hash.js       # Hash generation
+│   │   ├── downloader.js # Download logic (with JSDoc types)
+│   │   └── hash.js       # Hash generation (with JSDoc types)
 │   └── utils/
-│       └── fileManager.js # File operations
+│       └── fileManager.js # File operations (with JSDoc types)
 └── queries/              # Downloaded queries (gitignored)
 ```
 
@@ -106,6 +114,14 @@ redash-manager/
 3. **Pagination**: Automatically handles paginated API responses
 4. **Change Detection**: SHA-256 hashing to detect modified queries
 5. **File Management**: Native `fs/promises` for async file operations
+6. **Type Safety**: TypeScript checks JavaScript code via JSDoc annotations
+
+## Development
+
+The project uses TypeScript for type checking while keeping code in JavaScript with JSDoc annotations. This provides:
+- Full type safety without compilation step
+- Better IDE autocomplete and error detection
+- No build process needed - run directly with Node.js
 
 ## License
 

@@ -1,9 +1,27 @@
 /**
+ * @typedef {Object} RedashQuery
+ * @property {number} id
+ * @property {string} name
+ * @property {string} [description]
+ * @property {string} query
+ * @property {string} created_at
+ * @property {string} updated_at
+ * @property {number} data_source_id
+ * @property {number} user_id
+ * @property {boolean} [is_archived]
+ * @property {boolean} [is_draft]
+ * @property {string[]} [tags]
+ */
+
+/**
  * Redash API Client
  * Uses native fetch API available in Node.js 24
  */
-
 export class RedashClient {
+  /**
+   * @param {string} baseUrl
+   * @param {string} apiKey
+   */
   constructor(baseUrl, apiKey) {
     if (!baseUrl || !apiKey) {
       throw new Error('REDASH_URL and REDASH_API_KEY must be provided');
@@ -15,6 +33,9 @@ export class RedashClient {
 
   /**
    * Make an authenticated request to the Redash API
+   * @param {string} endpoint
+   * @param {RequestInit} [options]
+   * @returns {Promise<any>}
    */
   async request(endpoint, options = {}) {
     const url = `${this.baseUrl}/api${endpoint}`;
@@ -24,7 +45,7 @@ export class RedashClient {
       headers: {
         'Authorization': `Key ${this.apiKey}`,
         'Content-Type': 'application/json',
-        ...options.headers,
+        ...(options.headers || {}),
       },
     });
 
@@ -39,8 +60,10 @@ export class RedashClient {
 
   /**
    * Fetch all queries (with pagination support)
+   * @returns {Promise<RedashQuery[]>}
    */
   async getAllQueries() {
+    /** @type {RedashQuery[]} */
     const queries = [];
     let page = 1;
     const pageSize = 100;
@@ -69,6 +92,8 @@ export class RedashClient {
 
   /**
    * Fetch a single query by ID with full details
+   * @param {number} queryId
+   * @returns {Promise<RedashQuery>}
    */
   async getQuery(queryId) {
     return this.request(`/queries/${queryId}`);
@@ -77,10 +102,15 @@ export class RedashClient {
 
 /**
  * Create a Redash client from environment variables
+ * @returns {RedashClient}
  */
 export function createClient() {
   const baseUrl = process.env.REDASH_URL;
   const apiKey = process.env.REDASH_API_KEY;
+
+  if (!baseUrl || !apiKey) {
+    throw new Error('REDASH_URL and REDASH_API_KEY environment variables must be set');
+  }
 
   return new RedashClient(baseUrl, apiKey);
 }
