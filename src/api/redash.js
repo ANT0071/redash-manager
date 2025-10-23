@@ -70,7 +70,7 @@ export class RedashClient {
 
     while (true) {
       const data = await this.request(
-        `/queries?page=${page}&page_size=${pageSize}`
+        `/queries/my?order=created_at&page=${page}&page_size=${pageSize}`
       );
 
       if (!data.results || data.results.length === 0) {
