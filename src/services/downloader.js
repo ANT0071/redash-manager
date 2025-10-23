@@ -108,7 +108,6 @@ export async function downloadQueries() {
     if (localHash === cachedHash && cachedHash === remoteHash) {
       // All hashes equal - nothing to do
       skipped++;
-      console.log(`  [SKIP] Query ${queryId}: ${query.name} (unchanged)`);
       continue;
     } else if (localHash === cachedHash && cachedHash !== remoteHash) {
       // Local and cached match, but remote changed - download remote
