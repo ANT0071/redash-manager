@@ -22,6 +22,10 @@ import readline from 'readline';
  */
 
 /**
+ * @typedef {'local' | 'remote' | 'skip' | 'local-all' | 'remote-all'} ConflictResponse
+ */
+
+/**
  * Prompt user for confirmation with support for batch operations
  * @param {string} question
  * @returns {Promise<PromptResponse>}
@@ -50,6 +54,44 @@ async function promptUser(question) {
       } else {
         // Invalid input, default to 'no'
         resolve('no');
+      }
+    });
+  });
+}
+
+/**
+ * Prompt user for conflict resolution
+ * @param {string} question
+ * @returns {Promise<ConflictResponse>}
+ */
+async function promptConflict(question) {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  return new Promise((resolve) => {
+    rl.question(`${question} (l/r/s/la/ra): `, (answer) => {
+      rl.close();
+      const normalized = answer.toLowerCase().trim();
+
+      if (normalized === 'l' || normalized === 'local') {
+        resolve('local');
+      } else if (normalized === 'r' || normalized === 'remote') {
+        resolve('remote');
+      } else if (
+        normalized === 's' ||
+        normalized === 'skip' ||
+        normalized === ''
+      ) {
+        resolve('skip');
+      } else if (normalized === 'la' || normalized === 'local-all') {
+        resolve('local-all');
+      } else if (normalized === 'ra' || normalized === 'remote-all') {
+        resolve('remote-all');
+      } else {
+        // Invalid input, default to 'skip'
+        resolve('skip');
       }
     });
   });
@@ -102,6 +144,8 @@ export async function downloadQueries() {
   // Batch operation state
   /** @type {PromptResponse | null} */
   let batchMode = null;
+  /** @type {ConflictResponse | null} */
+  let conflictBatchMode = null;
   let userQuit = false;
 
   // Process queries as they're being fetched using async generator
@@ -206,14 +250,82 @@ export async function downloadQueries() {
       continue;
     } else {
       // All three differ - conflict
-      conflicts++;
       console.log(
         `  [CONFLICT] Query ${queryId}: ${query.name} (local, cached, and remote all differ)`
       );
       console.log(`    Local hash:  ${localHash || 'null'}`);
       console.log(`    Cached hash: ${cachedHash}`);
       console.log(`    Remote hash: ${remoteHash}`);
-      console.log(`    Keeping local version. Manual resolution required.`);
+
+      // Determine conflict resolution based on batch mode or prompt
+      /** @type {ConflictResponse | null} */
+      let resolution = null;
+
+      if (conflictBatchMode === 'local-all') {
+        console.log(`  [AUTO] Using local version (batch mode: local-all)`);
+        resolution = 'local';
+      } else if (conflictBatchMode === 'remote-all') {
+        console.log(`  [AUTO] Using remote version (batch mode: remote-all)`);
+        resolution = 'remote';
+      } else if (!userQuit) {
+        const response = await promptConflict(
+          `Resolve conflict for query ${queryId}?`
+        );
+
+        if (response === 'local-all') {
+          conflictBatchMode = 'local-all';
+          resolution = 'local';
+          console.log(
+            `  [BATCH MODE] Enabled: using local version for all remaining conflicts`
+          );
+        } else if (response === 'remote-all') {
+          conflictBatchMode = 'remote-all';
+          resolution = 'remote';
+          console.log(
+            `  [BATCH MODE] Enabled: using remote version for all remaining conflicts`
+          );
+        } else {
+          resolution = response;
+        }
+      } else {
+        resolution = 'skip';
+      }
+
+      if (resolution === 'local' && localSqlContent) {
+        // Upload local version to remote
+        try {
+          const updatedQuery = await client.updateQuery(
+            queryId,
+            localSqlContent
+          );
+          const newRemoteHash = hashQuery(updatedQuery);
+          const metadata = buildMetadata(updatedQuery, newRemoteHash);
+          await saveQuery(queryId, localSqlContent, metadata);
+          updatedToRemote++;
+          console.log(
+            `  [CONFLICT→LOCAL] Query ${queryId}: ${query.name} - local version uploaded to remote`
+          );
+        } catch (error) {
+          console.error(
+            `  [ERROR] Failed to upload local version for query ${queryId}: ${error instanceof Error ? error.message : String(error)}`
+          );
+          conflicts++;
+        }
+      } else if (resolution === 'remote') {
+        // Download remote version
+        const metadata = buildMetadata(query, remoteHash);
+        await saveQuery(queryId, remoteSqlContent, metadata);
+        updatedFromRemote++;
+        console.log(
+          `  [CONFLICT→REMOTE] Query ${queryId}: ${query.name} - remote version downloaded`
+        );
+      } else {
+        // Skip - keep local version as-is, don't update metadata
+        conflicts++;
+        console.log(
+          `  [CONFLICT→SKIP] Query ${queryId}: ${query.name} - keeping local version, no sync`
+        );
+      }
       continue;
     }
   }

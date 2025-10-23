@@ -61,11 +61,11 @@ This will:
 - **All hashes match**: Skip (no changes)
 - **Local and cached match, remote differs**: Automatically download remote changes
 - **Cached and remote match, local differs**: Prompt to upload local changes
-- **All three differ**: Report conflict, keep local version (manual resolution required)
+- **All three differ**: Conflict detected - prompt for resolution
 
 #### Interactive prompts
 
-When local changes are detected, you'll be prompted:
+**When local changes are detected:**
 
 ```
 Upload local changes to remote for query 123? (y/n/all/none/q):
@@ -78,6 +78,20 @@ Options:
 - `all`: Upload this and all remaining modified queries (no more prompts)
 - `none`: Skip this and all remaining modified queries (no more prompts)
 - `q` or `quit`: Stop sync immediately
+
+**When conflicts are detected (all three versions differ):**
+
+```
+Resolve conflict for query 123? (l/r/s/la/ra):
+```
+
+Options:
+
+- `l` or `local`: Use local version (upload to remote)
+- `r` or `remote`: Use remote version (download and overwrite local)
+- `s` or `skip` or `Enter`: Skip this conflict (keep local, don't sync)
+- `la` or `local-all`: Use local version for this and all remaining conflicts
+- `ra` or `remote-all`: Use remote version for this and all remaining conflicts
 
 ### Query structure
 
