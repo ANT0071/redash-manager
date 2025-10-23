@@ -33,7 +33,7 @@ This will automatically:
 2. Configure your Redash credentials in `.env`:
 
 ```bash
-REDASH_URL=https://your-redash-instance.com
+REDASH_URL=https://redash.example.invalid
 REDASH_API_KEY=your_api_key_here
 ```
 
