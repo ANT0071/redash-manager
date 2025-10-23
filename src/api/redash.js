@@ -59,12 +59,11 @@ export class RedashClient {
   }
 
   /**
-   * Fetch all queries (with pagination support)
-   * @returns {Promise<RedashQuery[]>}
+   * Fetch all queries continuously using async generator
+   * Yields queries as they're being fetched (with pagination support)
+   * @returns {AsyncGenerator<RedashQuery, void, unknown>}
    */
-  async getAllQueries() {
-    /** @type {RedashQuery[]} */
-    const queries = [];
+  async *getAllQueries() {
     let page = 1;
     const pageSize = 100;
 
@@ -77,7 +76,10 @@ export class RedashClient {
         break;
       }
 
-      queries.push(...data.results);
+      // Yield queries as they're fetched
+      for (const query of data.results) {
+        yield query;
+      }
 
       // Check if there are more pages
       if (data.results.length < pageSize) {
@@ -86,8 +88,6 @@ export class RedashClient {
 
       page++;
     }
-
-    return queries;
   }
 
   /**

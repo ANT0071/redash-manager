@@ -51,15 +51,15 @@ export async function downloadQueries() {
   await ensureQueriesDir();
 
   console.log('Fetching queries...');
-  const queries = await client.getAllQueries();
-
-  console.log(`Found ${queries.length} queries`);
 
   let downloaded = 0;
   let skipped = 0;
   let updated = 0;
+  let total = 0;
 
-  for (const query of queries) {
+  // Process queries as they're being fetched using async generator
+  for await (const query of client.getAllQueries()) {
+    total++;
     const queryId = query.id;
     const sqlContent = query.query || '';
     const currentHash = hashQuery(query);
@@ -93,5 +93,5 @@ export async function downloadQueries() {
   console.log(`  New: ${downloaded}`);
   console.log(`  Updated: ${updated}`);
   console.log(`  Skipped (unchanged): ${skipped}`);
-  console.log(`  Total: ${queries.length}`);
+  console.log(`  Total: ${total}`);
 }
