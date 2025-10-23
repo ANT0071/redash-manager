@@ -117,3 +117,17 @@ export async function readQueryMetadata(queryId) {
     return null;
   }
 }
+
+/**
+ * Read query SQL content from file
+ * @param {number} queryId
+ * @returns {Promise<string | null>}
+ */
+export async function readQuerySql(queryId) {
+  try {
+    const sqlPath = getQuerySqlPath(queryId);
+    return await fs.readFile(sqlPath, 'utf8');
+  } catch {
+    return null;
+  }
+}

@@ -98,6 +98,19 @@ export class RedashClient {
   async getQuery(queryId) {
     return this.request(`/queries/${queryId}`);
   }
+
+  /**
+   * Update a query's SQL content
+   * @param {number} queryId
+   * @param {string} sqlContent
+   * @returns {Promise<RedashQuery>}
+   */
+  async updateQuery(queryId, sqlContent) {
+    return this.request(`/queries/${queryId}`, {
+      method: 'POST',
+      body: JSON.stringify({ query: sqlContent }),
+    });
+  }
 }
 
 /**
