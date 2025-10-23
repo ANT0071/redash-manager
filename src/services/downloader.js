@@ -18,9 +18,13 @@ import readline from 'readline';
  */
 
 /**
- * Prompt user for confirmation
+ * @typedef {'yes' | 'no' | 'all' | 'none' | 'quit'} PromptResponse
+ */
+
+/**
+ * Prompt user for confirmation with support for batch operations
  * @param {string} question
- * @returns {Promise<boolean>}
+ * @returns {Promise<PromptResponse>}
  */
 async function promptUser(question) {
   const rl = readline.createInterface({
@@ -29,9 +33,24 @@ async function promptUser(question) {
   });
 
   return new Promise((resolve) => {
-    rl.question(`${question} (y/n): `, (answer) => {
+    rl.question(`${question} (y/n/all/none/q): `, (answer) => {
       rl.close();
-      resolve(answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes');
+      const normalized = answer.toLowerCase().trim();
+
+      if (normalized === 'y' || normalized === 'yes') {
+        resolve('yes');
+      } else if (normalized === 'n' || normalized === 'no') {
+        resolve('no');
+      } else if (normalized === 'all') {
+        resolve('all');
+      } else if (normalized === 'none') {
+        resolve('none');
+      } else if (normalized === 'q' || normalized === 'quit') {
+        resolve('quit');
+      } else {
+        // Invalid input, default to 'no'
+        resolve('no');
+      }
     });
   });
 }
@@ -80,6 +99,11 @@ export async function downloadQueries() {
   let conflicts = 0;
   let total = 0;
 
+  // Batch operation state
+  /** @type {PromptResponse | null} */
+  let batchMode = null;
+  let userQuit = false;
+
   // Process queries as they're being fetched using async generator
   for await (const query of client.getAllQueries()) {
     total++;
@@ -123,9 +147,39 @@ export async function downloadQueries() {
       console.log(
         `  [LOCAL MODIFIED] Query ${queryId}: ${query.name} (local changes detected)`
       );
-      const shouldUpload = await promptUser(
-        `Upload local changes to remote for query ${queryId}?`
-      );
+
+      // Determine if we should upload based on batch mode or prompt
+      let shouldUpload = false;
+
+      if (batchMode === 'all') {
+        shouldUpload = true;
+        console.log(`  [AUTO] Uploading (batch mode: all)`);
+      } else if (batchMode === 'none') {
+        shouldUpload = false;
+        console.log(`  [AUTO] Skipping (batch mode: none)`);
+      } else if (!userQuit) {
+        const response = await promptUser(
+          `Upload local changes to remote for query ${queryId}?`
+        );
+
+        if (response === 'quit') {
+          console.log(`\n[QUIT] User requested to quit. Stopping sync...`);
+          userQuit = true;
+          break;
+        } else if (response === 'all') {
+          batchMode = 'all';
+          shouldUpload = true;
+          console.log(
+            `  [BATCH MODE] Enabled: uploading all remaining queries`
+          );
+        } else if (response === 'none') {
+          batchMode = 'none';
+          shouldUpload = false;
+          console.log(`  [BATCH MODE] Enabled: skipping all remaining queries`);
+        } else {
+          shouldUpload = response === 'yes';
+        }
+      }
 
       if (shouldUpload && localSqlContent) {
         try {
@@ -164,7 +218,8 @@ export async function downloadQueries() {
     }
   }
 
-  console.log('\nSync complete:');
+  const status = userQuit ? 'Sync interrupted' : 'Sync complete';
+  console.log(`\n${status}:`);
   console.log(`  New: ${downloaded}`);
   console.log(`  Updated from remote: ${updatedFromRemote}`);
   console.log(`  Updated to remote: ${updatedToRemote}`);

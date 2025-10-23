@@ -51,7 +51,33 @@ This will:
 - Fetch all queries
 - Save each query to `queries/{id}/query.sql`
 - Save metadata to `queries/{id}/query.json`
-- Skip queries that haven't changed (based on content hash)
+- Perform three-way sync using content hashes:
+  - **Local hash**: Current content of `query.sql` file
+  - **Cached hash**: Hash stored in `query.json` from last sync
+  - **Remote hash**: Hash of query content from Redash API
+
+#### Sync behavior
+
+- **All hashes match**: Skip (no changes)
+- **Local and cached match, remote differs**: Automatically download remote changes
+- **Cached and remote match, local differs**: Prompt to upload local changes
+- **All three differ**: Report conflict, keep local version (manual resolution required)
+
+#### Interactive prompts
+
+When local changes are detected, you'll be prompted:
+
+```
+Upload local changes to remote for query 123? (y/n/all/none/q):
+```
+
+Options:
+
+- `y` or `yes`: Upload this query
+- `n` or `no`: Skip this query
+- `all`: Upload this and all remaining modified queries (no more prompts)
+- `none`: Skip this and all remaining modified queries (no more prompts)
+- `q` or `quit`: Stop sync immediately
 
 ### Query structure
 
