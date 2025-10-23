@@ -68,15 +68,15 @@ This will:
 **When local changes are detected:**
 
 ```
-Upload local changes to remote for query 123? (yes/no/yes-all/no-all/quit):
+Upload local changes to remote for query 123? (yes/skip/yes-all/skip-all/quit):
 ```
 
 Options:
 
 - `yes`: Upload this query
-- `no`: Skip this query
+- `skip` or `Enter`: Skip this query
 - `yes-all`: Upload this and all remaining modified queries (no more prompts)
-- `no-all`: Skip this and all remaining modified queries (no more prompts)
+- `skip-all`: Skip this and all remaining modified queries (no more prompts)
 - `quit`: Stop sync immediately
 
 **When conflicts are detected (all three versions differ):**

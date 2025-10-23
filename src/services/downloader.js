@@ -18,7 +18,7 @@ import readline from 'readline';
  */
 
 /**
- * @typedef {'yes' | 'no' | 'yes-all' | 'no-all' | 'quit'} PromptResponse
+ * @typedef {'yes' | 'skip' | 'yes-all' | 'skip-all' | 'quit'} PromptResponse
  */
 
 /**
@@ -37,23 +37,23 @@ async function promptUser(question) {
   });
 
   return new Promise((resolve) => {
-    rl.question(`${question} (yes/no/yes-all/no-all/quit): `, (answer) => {
+    rl.question(`${question} (yes/skip/yes-all/skip-all/quit): `, (answer) => {
       rl.close();
       const normalized = answer.toLowerCase().trim();
 
       if (normalized === 'yes') {
         resolve('yes');
-      } else if (normalized === 'no') {
-        resolve('no');
+      } else if (normalized === 'skip' || normalized === '') {
+        resolve('skip');
       } else if (normalized === 'yes-all') {
         resolve('yes-all');
-      } else if (normalized === 'no-all') {
-        resolve('no-all');
+      } else if (normalized === 'skip-all') {
+        resolve('skip-all');
       } else if (normalized === 'quit') {
         resolve('quit');
       } else {
-        // Invalid input, default to 'no'
-        resolve('no');
+        // Invalid input, default to 'skip'
+        resolve('skip');
       }
     });
   });
@@ -197,9 +197,9 @@ export async function downloadQueries() {
       if (batchMode === 'yes-all') {
         shouldUpload = true;
         console.log(`  [AUTO] Uploading (batch mode: yes-all)`);
-      } else if (batchMode === 'no-all') {
+      } else if (batchMode === 'skip-all') {
         shouldUpload = false;
-        console.log(`  [AUTO] Skipping (batch mode: no-all)`);
+        console.log(`  [AUTO] Skipping (batch mode: skip-all)`);
       } else if (!userQuit) {
         const response = await promptUser(
           `Upload local changes to remote for query ${queryId}?`
@@ -215,8 +215,8 @@ export async function downloadQueries() {
           console.log(
             `  [BATCH MODE] Enabled: uploading all remaining queries`
           );
-        } else if (response === 'no-all') {
-          batchMode = 'no-all';
+        } else if (response === 'skip-all') {
+          batchMode = 'skip-all';
           shouldUpload = false;
           console.log(`  [BATCH MODE] Enabled: skipping all remaining queries`);
         } else {
