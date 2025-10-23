@@ -11,6 +11,10 @@ import {
   readQuerySql,
 } from '../utils/fileManager.js';
 import readline from 'readline';
+import { spawn } from 'child_process';
+import fs from 'fs/promises';
+import os from 'os';
+import path from 'path';
 
 /**
  * @typedef {import('../api/redash.js').RedashQuery} RedashQuery
@@ -24,6 +28,103 @@ import readline from 'readline';
 /**
  * @typedef {'local' | 'remote' | 'skip' | 'local-all' | 'remote-all'} ConflictResponse
  */
+
+/**
+ * Show diff between local and remote content using git diff or diff command
+ * @param {string} localContent
+ * @param {string} remoteContent
+ * @param {string} label
+ * @returns {Promise<void>}
+ */
+async function showDiff(localContent, remoteContent, label) {
+  // Create temporary files for diffing
+  const tmpDir = os.tmpdir();
+  const localFile = path.join(tmpDir, `redash-local-${Date.now()}.sql`);
+  const remoteFile = path.join(tmpDir, `redash-remote-${Date.now()}.sql`);
+
+  try {
+    await fs.writeFile(localFile, localContent, 'utf8');
+    await fs.writeFile(remoteFile, remoteContent, 'utf8');
+
+    console.log(`\n  [DIFF] Changes for ${label}:`);
+
+    // Try git diff first, then fall back to diff
+    const diffCommand = await new Promise((resolve) => {
+      const gitTest = spawn('git', ['--version']);
+      gitTest.on('close', (code) => {
+        resolve(code === 0 ? 'git' : 'diff');
+      });
+      gitTest.on('error', () => resolve('diff'));
+    });
+
+    return new Promise((resolve) => {
+      const args =
+        diffCommand === 'git'
+          ? [
+              'diff',
+              '--no-index',
+              '--color=always',
+              '--',
+              remoteFile,
+              localFile,
+            ]
+          : ['-u', remoteFile, localFile];
+
+      const proc = spawn(diffCommand, args);
+
+      proc.stdout.on('data', (data) => {
+        // Filter out the temp file paths from diff output
+        const output = data
+          .toString()
+          .split('\n')
+          .filter(
+            /** @param {string} line */
+            (line) => {
+              // Skip lines that show temp file paths
+              return !(
+                line.startsWith('---') ||
+                line.startsWith('+++') ||
+                line.startsWith('diff --git')
+              );
+            }
+          )
+          .join('\n');
+
+        if (output.trim()) {
+          process.stdout.write(output);
+        }
+      });
+
+      proc.stderr.on('data', (_data) => {
+        // Ignore stderr for diff (exit code 1 is normal when files differ)
+      });
+
+      proc.on('close', async () => {
+        // Clean up temp files
+        try {
+          await fs.unlink(localFile);
+          await fs.unlink(remoteFile);
+        } catch (error) {
+          // Ignore cleanup errors
+        }
+        console.log(''); // Add blank line after diff
+        resolve();
+      });
+    });
+  } catch (error) {
+    // If diff fails, just continue without showing it
+    console.log(
+      `  [DIFF] Could not generate diff: ${error instanceof Error ? error.message : String(error)}`
+    );
+    // Clean up temp files on error
+    try {
+      await fs.unlink(localFile);
+      await fs.unlink(remoteFile);
+    } catch {
+      // Ignore cleanup errors
+    }
+  }
+}
 
 /**
  * Prompt user for confirmation with support for batch operations
@@ -201,6 +302,15 @@ export async function downloadQueries() {
         shouldUpload = false;
         console.log(`  [AUTO] Skipping (batch mode: skip-all)`);
       } else if (!userQuit) {
+        // Show diff before prompting
+        if (localSqlContent) {
+          await showDiff(
+            localSqlContent,
+            remoteSqlContent,
+            `Query ${queryId}: ${query.name}`
+          );
+        }
+
         const response = await promptUser(
           `Upload local changes to remote for query ${queryId}?`
         );
