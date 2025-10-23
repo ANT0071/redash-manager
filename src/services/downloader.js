@@ -18,7 +18,7 @@ import readline from 'readline';
  */
 
 /**
- * @typedef {'yes' | 'no' | 'all' | 'none' | 'quit'} PromptResponse
+ * @typedef {'yes' | 'no' | 'yes-all' | 'no-all' | 'quit'} PromptResponse
  */
 
 /**
@@ -37,19 +37,19 @@ async function promptUser(question) {
   });
 
   return new Promise((resolve) => {
-    rl.question(`${question} (y/n/all/none/q): `, (answer) => {
+    rl.question(`${question} (yes/no/yes-all/no-all/quit): `, (answer) => {
       rl.close();
       const normalized = answer.toLowerCase().trim();
 
-      if (normalized === 'y' || normalized === 'yes') {
+      if (normalized === 'yes') {
         resolve('yes');
-      } else if (normalized === 'n' || normalized === 'no') {
+      } else if (normalized === 'no') {
         resolve('no');
-      } else if (normalized === 'all') {
-        resolve('all');
-      } else if (normalized === 'none') {
-        resolve('none');
-      } else if (normalized === 'q' || normalized === 'quit') {
+      } else if (normalized === 'yes-all') {
+        resolve('yes-all');
+      } else if (normalized === 'no-all') {
+        resolve('no-all');
+      } else if (normalized === 'quit') {
         resolve('quit');
       } else {
         // Invalid input, default to 'no'
@@ -71,29 +71,28 @@ async function promptConflict(question) {
   });
 
   return new Promise((resolve) => {
-    rl.question(`${question} (l/r/s/la/ra): `, (answer) => {
-      rl.close();
-      const normalized = answer.toLowerCase().trim();
+    rl.question(
+      `${question} (local/remote/skip/local-all/remote-all): `,
+      (answer) => {
+        rl.close();
+        const normalized = answer.toLowerCase().trim();
 
-      if (normalized === 'l' || normalized === 'local') {
-        resolve('local');
-      } else if (normalized === 'r' || normalized === 'remote') {
-        resolve('remote');
-      } else if (
-        normalized === 's' ||
-        normalized === 'skip' ||
-        normalized === ''
-      ) {
-        resolve('skip');
-      } else if (normalized === 'la' || normalized === 'local-all') {
-        resolve('local-all');
-      } else if (normalized === 'ra' || normalized === 'remote-all') {
-        resolve('remote-all');
-      } else {
-        // Invalid input, default to 'skip'
-        resolve('skip');
+        if (normalized === 'local') {
+          resolve('local');
+        } else if (normalized === 'remote') {
+          resolve('remote');
+        } else if (normalized === 'skip' || normalized === '') {
+          resolve('skip');
+        } else if (normalized === 'local-all') {
+          resolve('local-all');
+        } else if (normalized === 'remote-all') {
+          resolve('remote-all');
+        } else {
+          // Invalid input, default to 'skip'
+          resolve('skip');
+        }
       }
-    });
+    );
   });
 }
 
@@ -195,12 +194,12 @@ export async function downloadQueries() {
       // Determine if we should upload based on batch mode or prompt
       let shouldUpload = false;
 
-      if (batchMode === 'all') {
+      if (batchMode === 'yes-all') {
         shouldUpload = true;
-        console.log(`  [AUTO] Uploading (batch mode: all)`);
-      } else if (batchMode === 'none') {
+        console.log(`  [AUTO] Uploading (batch mode: yes-all)`);
+      } else if (batchMode === 'no-all') {
         shouldUpload = false;
-        console.log(`  [AUTO] Skipping (batch mode: none)`);
+        console.log(`  [AUTO] Skipping (batch mode: no-all)`);
       } else if (!userQuit) {
         const response = await promptUser(
           `Upload local changes to remote for query ${queryId}?`
@@ -210,14 +209,14 @@ export async function downloadQueries() {
           console.log(`\n[QUIT] User requested to quit. Stopping sync...`);
           userQuit = true;
           break;
-        } else if (response === 'all') {
-          batchMode = 'all';
+        } else if (response === 'yes-all') {
+          batchMode = 'yes-all';
           shouldUpload = true;
           console.log(
             `  [BATCH MODE] Enabled: uploading all remaining queries`
           );
-        } else if (response === 'none') {
-          batchMode = 'none';
+        } else if (response === 'no-all') {
+          batchMode = 'no-all';
           shouldUpload = false;
           console.log(`  [BATCH MODE] Enabled: skipping all remaining queries`);
         } else {

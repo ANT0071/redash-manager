@@ -68,30 +68,30 @@ This will:
 **When local changes are detected:**
 
 ```
-Upload local changes to remote for query 123? (y/n/all/none/q):
+Upload local changes to remote for query 123? (yes/no/yes-all/no-all/quit):
 ```
 
 Options:
 
-- `y` or `yes`: Upload this query
-- `n` or `no`: Skip this query
-- `all`: Upload this and all remaining modified queries (no more prompts)
-- `none`: Skip this and all remaining modified queries (no more prompts)
-- `q` or `quit`: Stop sync immediately
+- `yes`: Upload this query
+- `no`: Skip this query
+- `yes-all`: Upload this and all remaining modified queries (no more prompts)
+- `no-all`: Skip this and all remaining modified queries (no more prompts)
+- `quit`: Stop sync immediately
 
 **When conflicts are detected (all three versions differ):**
 
 ```
-Resolve conflict for query 123? (l/r/s/la/ra):
+Resolve conflict for query 123? (local/remote/skip/local-all/remote-all):
 ```
 
 Options:
 
-- `l` or `local`: Use local version (upload to remote)
-- `r` or `remote`: Use remote version (download and overwrite local)
-- `s` or `skip` or `Enter`: Skip this conflict (keep local, don't sync)
-- `la` or `local-all`: Use local version for this and all remaining conflicts
-- `ra` or `remote-all`: Use remote version for this and all remaining conflicts
+- `local`: Use local version (upload to remote)
+- `remote`: Use remote version (download and overwrite local)
+- `skip` or `Enter`: Skip this conflict (keep local, don't sync)
+- `local-all`: Use local version for this and all remaining conflicts
+- `remote-all`: Use remote version for this and all remaining conflicts
 
 ### Query structure
 
