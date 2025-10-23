@@ -7,11 +7,13 @@ import crypto from 'crypto';
 
 /**
  * Generate SHA-256 hash of content
+ * Trailing whitespace is trimmed before hashing
  * @param {string} content
  * @returns {string}
  */
 export function generateHash(content) {
-  return crypto.createHash('sha256').update(content, 'utf8').digest('hex');
+  const normalized = content.trimEnd();
+  return crypto.createHash('sha256').update(normalized, 'utf8').digest('hex');
 }
 
 /**
