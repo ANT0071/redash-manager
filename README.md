@@ -10,6 +10,7 @@ Download and manage Redash queries locally with zero external dependencies.
 - Skip unchanged queries on subsequent downloads
 - Zero runtime dependencies (uses Node.js 24 built-in features)
 - TypeScript type checking with JSDoc annotations
+- Automatic code formatting with Prettier on pre-commit (via lefthook)
 
 ## Requirements
 
@@ -17,11 +18,17 @@ Download and manage Redash queries locally with zero external dependencies.
 
 ## Setup
 
-1. Install dependencies (dev only - TypeScript for type checking):
+1. Install dependencies (dev only - TypeScript, Prettier, and lefthook):
 
 ```bash
 npm install
 ```
+
+This will automatically:
+
+- Install dev dependencies
+- Set up `.env` file from `.env-dist` if it doesn't exist
+- Install git hooks with lefthook
 
 2. Configure your Redash credentials in `.env`:
 
@@ -38,13 +45,8 @@ REDASH_API_KEY=your_api_key_here
 npm run download
 ```
 
-### Type checking
-
-```bash
-npm run type-check
-```
-
 This will:
+
 - Connect to your Redash instance
 - Fetch all queries
 - Save each query to `queries/{id}/query.sql`
@@ -87,12 +89,37 @@ The `query.json` file contains:
 }
 ```
 
+### Code formatting
+
+Format all code:
+
+```bash
+npm run format
+```
+
+Check formatting without changes:
+
+```bash
+npm run format:check
+```
+
+### Type checking
+
+Run TypeScript type checks:
+
+```bash
+npm run type-check
+```
+
 ## Project Structure
 
 ```
 redash-manager/
 ├── .env-dist              # Environment template
 ├── .env                   # Your credentials (gitignored)
+├── .prettierrc.json       # Prettier configuration
+├── .prettierignore        # Prettier ignore patterns
+├── lefthook.yml           # Git hooks configuration
 ├── package.json
 ├── tsconfig.json          # TypeScript config for type checking
 ├── src/
@@ -118,10 +145,36 @@ redash-manager/
 
 ## Development
 
+### Type Safety
+
 The project uses TypeScript for type checking while keeping code in JavaScript with JSDoc annotations. This provides:
+
 - Full type safety without compilation step
 - Better IDE autocomplete and error detection
 - No build process needed - run directly with Node.js
+
+### Code Quality
+
+- **Prettier**: Enforces consistent code formatting
+- **lefthook**: Automatically formats code and runs type checks before commits
+- **Pre-commit hooks**:
+  - Formats staged files with Prettier
+  - Runs TypeScript type checking
+  - Runs in parallel for fast execution
+
+### Git Hooks
+
+The pre-commit hook (managed by lefthook) will automatically:
+
+1. Format any staged `.js`, `.json`, `.md`, or `.yml` files
+2. Run type checking to catch errors early
+3. Add formatted files back to the commit
+
+To skip hooks temporarily (not recommended):
+
+```bash
+git commit --no-verify
+```
 
 ## License
 

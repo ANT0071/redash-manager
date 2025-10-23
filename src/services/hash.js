@@ -11,10 +11,7 @@ import crypto from 'crypto';
  * @returns {string}
  */
 export function generateHash(content) {
-  return crypto
-    .createHash('sha256')
-    .update(content, 'utf8')
-    .digest('hex');
+  return crypto.createHash('sha256').update(content, 'utf8').digest('hex');
 }
 
 /**

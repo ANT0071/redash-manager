@@ -22,11 +22,6 @@
     // Resolve types for Node.js
     "types": ["node"]
   },
-  "include": [
-    "src/**/*.js"
-  ],
-  "exclude": [
-    "node_modules",
-    "queries"
-  ]
+  "include": ["src/**/*.js"],
+  "exclude": ["node_modules", "queries"]
 }

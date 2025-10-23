@@ -62,7 +62,10 @@ async function main() {
   try {
     await cmd.action();
   } catch (error) {
-    console.error('\nError:', error instanceof Error ? error.message : String(error));
+    console.error(
+      '\nError:',
+      error instanceof Error ? error.message : String(error)
+    );
     process.exit(1);
   }
 }

@@ -9,9 +9,11 @@
     "node": ">=24.0.0"
   },
   "scripts": {
-    "prepare": "test -f .env || cp .env-dist .env",
+    "prepare": "test -f .env || cp .env-dist .env && lefthook install",
     "download": "node --env-file=.env src/index.js download",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "keywords": [
     "redash",
@@ -21,6 +23,8 @@
   "author": "",
   "devDependencies": {
     "@types/node": "^24.9.1",
+    "lefthook": "^1.10.3",
+    "prettier": "^3.4.2",
     "typescript": "^5.7.0"
   }
 }

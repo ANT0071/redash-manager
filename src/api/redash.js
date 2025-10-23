@@ -43,7 +43,7 @@ export class RedashClient {
     const response = await fetch(url, {
       ...options,
       headers: {
-        'Authorization': `Key ${this.apiKey}`,
+        Authorization: `Key ${this.apiKey}`,
         'Content-Type': 'application/json',
         ...(options.headers || {}),
       },
@@ -109,7 +109,9 @@ export function createClient() {
   const apiKey = process.env.REDASH_API_KEY;
 
   if (!baseUrl || !apiKey) {
-    throw new Error('REDASH_URL and REDASH_API_KEY environment variables must be set');
+    throw new Error(
+      'REDASH_URL and REDASH_API_KEY environment variables must be set'
+    );
   }
 
   return new RedashClient(baseUrl, apiKey);
