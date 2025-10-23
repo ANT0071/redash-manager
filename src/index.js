@@ -15,8 +15,8 @@ import { downloadQueries } from './services/downloader.js';
 
 /** @type {Record<string, Command>} */
 const COMMANDS = {
-  download: {
-    description: 'Download all queries from Redash',
+  sync: {
+    description: 'Sync all queries with Redash',
     action: downloadQueries,
   },
 };

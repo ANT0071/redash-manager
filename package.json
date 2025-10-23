@@ -10,7 +10,7 @@
   },
   "scripts": {
     "prepare": "test -f .env || cp .env-dist .env && lefthook install",
-    "download": "node --env-file=.env src/index.js download",
+    "sync": "node --env-file=.env src/index.js sync",
     "type-check": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check ."

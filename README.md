@@ -4,10 +4,10 @@ Download and manage Redash queries locally with zero external dependencies.
 
 ## Features
 
-- Download all queries from your Redash instance
+- Sync all queries with your Redash instance
 - Save queries as `.sql` files with accompanying metadata
 - Track query changes using SHA-256 hashing
-- Skip unchanged queries on subsequent downloads
+- Skip unchanged queries on subsequent syncs
 - Zero runtime dependencies (uses Node.js 24 built-in features)
 - TypeScript type checking with JSDoc annotations
 - Automatic code formatting with Prettier on pre-commit (via lefthook)
@@ -39,10 +39,10 @@ REDASH_API_KEY=your_api_key_here
 
 ## Usage
 
-### Download all queries
+### Sync all queries
 
 ```bash
-npm run download
+npm run sync
 ```
 
 This will:
